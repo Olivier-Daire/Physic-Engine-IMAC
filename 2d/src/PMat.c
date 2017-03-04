@@ -1,4 +1,4 @@
-#include "PMat.h"
+#include "../include/PMat.h"
 
 extern void Mass(PMat* M, G2Xpoint pos, G2Xvector vel, double m) {
 	M->position = pos;

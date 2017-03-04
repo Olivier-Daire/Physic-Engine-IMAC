@@ -1,4 +1,4 @@
-#include "Link.h"
+#include "../include/Link.h"
 
 void AlgoRessort(Link* L) {
 	double d = g2x_Distance(L->M1->position, L->M2->position);

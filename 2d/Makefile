@@ -11,7 +11,7 @@ ifeq ($(CC),g++) #en mode debug
 endif
 
 #compil en mode 'debug' ou optmisée (-O2)
-DBG = yes
+DBG = no
 
 ifeq ($(DBG),yes) #en mode debug
   CFLAGS = -g -Wpointer-arith -Wall

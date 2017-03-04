@@ -5,7 +5,7 @@
 
 typedef struct _link {
 	PMat *M1, *M2;
-	double k,z,l,s;
+	double k,z;
 	G2Xvector f;
 	double d0;
 
