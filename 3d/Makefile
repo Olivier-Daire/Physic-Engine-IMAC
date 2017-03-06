@@ -11,10 +11,10 @@ ifeq ($(CC),g++) #en mode debug
 endif
 
 #compil en mode 'debug' ou optmisée (-O2)
-DBG = no
+DBG = yes
 
 ifeq ($(DBG),yes) #en mode debug
-  CFLAGS = -g -Wpointer-arith -Wall -ansi
+  CFLAGS = -g -Wpointer-arith -Wall
 else               #en mode normal
   CFLAGS = -O2 -ansi
 endif
@@ -26,9 +26,14 @@ src = src/
 # fichiers *.h locaux et lib.
 inc = -I./include $(incG3X) 
 
-exec = g3x_example
+exec = flag
 
 all : $(exec) clean
+
+flag: PMat.o Link.o flag.o math3D.o
+	@echo "assemblage [$^]->$@"
+	@$(CC) $^ $(lib) -o $@
+	@echo "------------------------"
 
 # règle générique de création de xxx.o à partir de src/xxx.c
 %.o : $(src)%.c
