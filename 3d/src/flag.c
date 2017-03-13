@@ -25,7 +25,7 @@ static void Init(void)
 {
   double Fe = 50;
   h = 1 / Fe;
-  double k = 0.7 * Fe*Fe;
+  double k = 0.01 * Fe * Fe;
   double z = 0.001 * Fe;
 
   TabM = (PMat*)calloc(nbm, sizeof(PMat));
@@ -98,18 +98,26 @@ void Anim(void)
 {
   M = TabM;
   L = TabL;
-  while (M < TabM + nbm) { M->algo(M, h); ++M; }
-  //while (L < TabL + nbl) { L->algo(L); ++L; }
+  for(int i = 0; i < nbm ; i++) {
+    M->algo(M, h); ++M;
+  }
+  for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
+    L->algo(L);
+    Gravite(L, GRAVITY);
+    ++L;
+  }
 }
 
 /*= FONCTION DE DESSIN PRINCIPALE =*/
 static void Dessin(void)
 {
-	M = TabM;
-  while (M < TabM + nbm) { M->draw(M); ++M; }
+  M = TabM;
   L = TabL;
+  for(int i = 0; i < nbm ; i++) {
+    M->draw(M); ++M;
+  }
   for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
-    L->draw(L); L++;
+    L->draw(L); ++L;
   }
   
 }

@@ -13,9 +13,7 @@ void AlgoRessort(Link* L) {
 }
 
 void AlgoFrein(Link* L) {
-	Vector3 f = L->M1->velocity;
-
-	f = Vec3SubVec3(f, L->M2->velocity);
+	Vector3 f = Vec3SubVec3(L->M1->velocity, L->M2->velocity);
 	ProdVec3(&f, -L->z);
 
 	L->M1->force = Vec3AddVec3(L->M1->force, f);
