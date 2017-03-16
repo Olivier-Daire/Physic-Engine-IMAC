@@ -11,7 +11,7 @@ static G3Xcolor colmap[MAXCOL];
 
 int nbm = HEIGHT * WIDTH;
 int nbl = HEIGHT * WIDTH *4; // FIXME
-Vector3 GRAVITY = {0, -9.1, 0};
+Vector3 GRAVITY = {0, 0, -9};
 double h;
 
 PMat* TabM;
@@ -23,10 +23,10 @@ PMat* M;
 
 static void Init(void)
 {
-  double Fe = 50;
-  h = 1 / Fe;
-  double k = 0.01 * Fe * Fe;
-  double z = 0.001 * Fe;
+  double Fe = 50; // Frequence
+  h = 1 / Fe; 
+  double k = 0.3 * Fe * Fe; // Raideur
+  double z = 0.03 * Fe; // Viscosite
 
   TabM = (PMat*)calloc(nbm, sizeof(PMat));
   TabL = (Link*)calloc(nbl, sizeof(Link));
@@ -38,27 +38,24 @@ static void Init(void)
   vel.y = 1;
   vel.z = 1;
 
-//  MassFixe(M, (Vector3){-1., -0., 0}); M++;
   for (int i = 0; i < nbm ; i++)
   {
     if (i < HEIGHT)
     {
-      Mass(M, (Vector3) { 1 * i , 0., 0 }, vel, 1); M++;
+        MassFixe(M, (Vector3){1 * i , 0., 0}); M++;
+        // If we want no fixed point and an awesome flying flag
+        //Mass(M, (Vector3) { 1 * i , 0., 0 }, vel, 1); M++;
     } else {
       Mass(M, (Vector3) { 1 * (i % HEIGHT) , 1 * (i / HEIGHT), 0 }, vel, 1); M++;
     }
     
   }
-  //MassFixe(M, (Vector3){start + 1, 0., 0}); M++;
 
   M = TabM;
   L = TabL;
 
-  float kMin = 0.25 * k;
-  float step = (1 - kMin) / WIDTH;
   for (int i = 0; i < nbm - 1; i++) {
-      int col = i / WIDTH;
-      float kOpt =  (1. - col * step) * k;
+      float k2 =   0.32 * Fe * Fe;
 
       //liens verticaux
       if (((i + 1) % HEIGHT) != 0) { 
@@ -70,21 +67,21 @@ static void Init(void)
 
     // liens horizontaux
     if (i < (nbm - HEIGHT)) {
-      RessortFrein(L, kOpt, z);
+      RessortFrein(L, k, z);
       Connect(M, L, M+HEIGHT);
       L++;
     }
 
     // diagonale
    if (i < (nbm - HEIGHT) && ((i + 1) % HEIGHT) != 0) {
-      RessortFrein(L, kOpt, z);
+      RessortFrein(L, k2, z);
       Connect(M, L, M+HEIGHT+1);
       L++;
     }
 
     // diagonale
     if (i < (nbm - HEIGHT) && ((i) % HEIGHT) != 0) {
-      RessortFrein(L, kOpt, z);
+      RessortFrein(L, k2, z);
       Connect(M, L, M+HEIGHT-1);
       L++;
     }
