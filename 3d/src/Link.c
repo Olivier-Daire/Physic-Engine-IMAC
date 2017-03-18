@@ -4,6 +4,7 @@ void AlgoRessort(Link* L) {
 	double d = Distance3(L->M1->position, L->M2->position);
 	double f = - L->k * (1 - (L->d0 / d));
 
+
 	Vector3 M1M2 = Vec3SubVec3(L->M2->position, L->M1->position);
 
 	ProdVec3(&M1M2, f);
@@ -27,6 +28,13 @@ void Connect(PMat* M1, Link* L, PMat* M2) {
 	L->d0 = Distance3(L->M1->position, L->M2->position);
 }
 
+void ConnectSphere(PMat* Sphere, Link* L, PMat* M2){
+	L->M1 = M2;
+	L->M2 = Sphere;
+	L->draw = &NoDraw;
+	L->d0 = Sphere->radius;
+}
+
 static void DrawLine(Link* L) {
 	glLineWidth(2.5);
 	glColor3f(1.0, 0.0, 0.0);
@@ -36,24 +44,30 @@ static void DrawLine(Link* L) {
 	glEnd();
 }
 
+static void NoDraw(Link* L) {}
+
 void AlgoRessortFrein(Link* L) {
+	AlgoRessort(L);
+	AlgoFrein(L);
+}
+
+void AlgoRessortFreinSphere(Link* L) {
 	double d = Distance3(L->M1->position, L->M2->position);
 
-	// I have no idea what i'm doing
-	if (abs(d - L->d0) > 1) {
-		Vector3 reset;
-		reset.x = 0;
-		reset.y = 0;
-		reset.z = 0;
-		
-		L->M1->force = reset;
-		L->M2->force = reset;
-		L->M1->velocity = reset;
-		L->M2->velocity = reset;
-	} 
+
+	if (d <= L->d0)
+	{
+		d = 1/ sqrt(d) - 1;
+	Vector3 force;
+	force.x = -L->M1->position.x * d; // No idea why the fuck is the x axis is reversed
+	force.y = L->M1->position.y * d;
+	force.z = L->M1->position.z * d;
+
+	 L->M1->velocity = Vec3AddVec3(force, L->M2->velocity);
+
 		AlgoRessort(L);
-	AlgoFrein(L);
-	
+		AlgoFrein(L);
+	}
 }
 
 extern void RessortFrein(Link* L, double k, double z) {
@@ -62,6 +76,13 @@ extern void RessortFrein(Link* L, double k, double z) {
 	L->d0 = 0;
 
 	L->algo = &AlgoRessortFrein;
+}
+
+extern void RessortFreinSphere(Link* L, double k, double z) {
+	L->k = k;
+	L->z = z;
+
+	L->algo = &AlgoRessortFreinSphere;
 }
 
 extern void Gravite(Link* L, Vector3 gravity) {

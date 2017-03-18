@@ -10,21 +10,23 @@ static G3Xcolor colmap[MAXCOL];
 #define WIDTH 24
 
 int nbm = HEIGHT * WIDTH;
-int nbl = HEIGHT * WIDTH *4; // FIXME
+int nbl = HEIGHT * WIDTH * 5;
 Vector3 GRAVITY = {0, 9.8, 0};
 double h;
 
 PMat* TabM;
 Link* TabL;
+Link* TabLSphere;
 
 Link* L;
+Link* LSphere;
 PMat* M;
 
 PMat* Sphere;
 
 static void Init(void)
 {
-  double Fe = 50; // Frequence
+  double Fe = 100; // Frequence
   h = 1 / Fe; 
   double k = 0.03 * Fe * Fe; // Raideur
   double z = 0.013 * Fe; // Viscosite
@@ -43,32 +45,24 @@ static void Init(void)
   {
     if (i < HEIGHT)
     {
-        //MassFixe(M, (Vector3){1 * i , 0., 0}); M++;
-        // If we want no fixed point and an awesome flying flag
-        Mass(M, (Vector3) { 1 * i , 0., 0 }, vel, 1); M++;
+      //MassFixe(M, (Vector3){1 * i , 0., 0}); M++;
+      // If we want no fixed point and an awesome flying flag
+      Mass(M, (Vector3) { 1 * i , 0., 0 }, vel, 1); M++;
     } else {
       Mass(M, (Vector3) { 1 * (i % HEIGHT) , 0, 1 * (i / HEIGHT)}, vel, 1); M++;
     }
     
   }
 
-  // Sphere
-  Sphere = malloc(sizeof(PMat));
-  MassFixe(Sphere, (Vector3){8 , 8, HEIGHT/2});
-  Sphere->radius = 4;
-
   M = TabM;
   L = TabL;
 
   for (int i = 0; i < nbm - 1; i++) {
-      float k2 =   0.032 * Fe * Fe;
-
       //liens verticaux
       if (((i + 1) % HEIGHT) != 0) { 
         RessortFrein(L, k, z);
         Connect(M, L, M+1);
         L++;
-        //M++;
       }
 
     // liens horizontaux
@@ -80,14 +74,14 @@ static void Init(void)
 
     // diagonale
    if (i < (nbm - HEIGHT) && ((i + 1) % HEIGHT) != 0) {
-      RessortFrein(L, k2, z);
+      RessortFrein(L, k, z);
       Connect(M, L, M+HEIGHT+1);
       L++;
     }
 
     // diagonale
     if (i < (nbm - HEIGHT) && ((i) % HEIGHT) != 0) {
-      RessortFrein(L, k2, z);
+      RessortFrein(L, k, z);
       Connect(M, L, M+HEIGHT-1);
       L++;
     }
@@ -95,6 +89,20 @@ static void Init(void)
     M++;
   }
 
+  // Sphere
+  Sphere = malloc(sizeof(PMat));
+  MassFixe(Sphere, (Vector3){12, 8, 8});
+  Sphere->radius = 5;
+  TabLSphere = (Link*)calloc(nbm, sizeof(Link));
+  LSphere = TabLSphere;
+  M = TabM;
+  for (int i = 0; i < nbm - 1; i++) {
+     // lien avec sphere
+    RessortFreinSphere(LSphere, 600, z);
+    ConnectSphere(Sphere, LSphere, M);
+    LSphere++;
+    M++;
+  }
 }
 
 void Anim(void)
@@ -102,15 +110,17 @@ void Anim(void)
   M = TabM;
   L = TabL;
   for(int i = 0; i < nbm ; i++) {
-    sphereCollision(M, Sphere);
-    //if(!sphereCollision(M, Sphere)) {// TODO rename ?
       M->algo(M, h); ++M;
-    //}
   }
   for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
     L->algo(L);
     Gravite(L, GRAVITY);
     ++L;
+  }
+  LSphere = TabLSphere;
+  for(int i = 0; i < nbm -1 ; i++) {
+    LSphere->algo(LSphere);
+    ++LSphere;
   }
 }
 
@@ -124,6 +134,11 @@ static void Dessin(void)
   }
   for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
     L->draw(L); ++L;
+  }
+    LSphere = TabLSphere;
+  for(int i = 0; i < nbm -1 ; i++) {
+    LSphere->draw(LSphere); // FIXME
+    ++LSphere;
   }
   Sphere->draw(Sphere, G3Xbb);
 }
@@ -154,7 +169,7 @@ int main(int argc, char** argv)
 
 	/* paramètres caméra */
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
-  g3x_SetPerspective(20.,100.,1.);
+  g3x_SetPerspective(25.,100.,1.);
   /* position, orientation de la caméra */
   //g3x_SetCameraSpheric(0,0,30,(G3Xpoint){20.,0.,0.});
   //,theta:2.578274,phi:1.685796
