@@ -11,7 +11,7 @@ static G3Xcolor colmap[MAXCOL];
 
 int nbm = HEIGHT * WIDTH;
 int nbl = HEIGHT * WIDTH *4; // FIXME
-Vector3 GRAVITY = {0, 0, -9};
+Vector3 GRAVITY = {0, 9.8, 0};
 double h;
 
 PMat* TabM;
@@ -20,13 +20,14 @@ Link* TabL;
 Link* L;
 PMat* M;
 
+PMat* Sphere;
 
 static void Init(void)
 {
   double Fe = 50; // Frequence
   h = 1 / Fe; 
-  double k = 0.3 * Fe * Fe; // Raideur
-  double z = 0.03 * Fe; // Viscosite
+  double k = 0.03 * Fe * Fe; // Raideur
+  double z = 0.013 * Fe; // Viscosite
 
   TabM = (PMat*)calloc(nbm, sizeof(PMat));
   TabL = (Link*)calloc(nbl, sizeof(Link));
@@ -34,28 +35,33 @@ static void Init(void)
   M = TabM;
 
   Vector3 vel;
-  vel.x = 1;
-  vel.y = 1;
-  vel.z = 1;
+  vel.x = 0;
+  vel.y = 0;
+  vel.z = 0;
 
   for (int i = 0; i < nbm ; i++)
   {
     if (i < HEIGHT)
     {
-        MassFixe(M, (Vector3){1 * i , 0., 0}); M++;
+        //MassFixe(M, (Vector3){1 * i , 0., 0}); M++;
         // If we want no fixed point and an awesome flying flag
-        //Mass(M, (Vector3) { 1 * i , 0., 0 }, vel, 1); M++;
+        Mass(M, (Vector3) { 1 * i , 0., 0 }, vel, 1); M++;
     } else {
-      Mass(M, (Vector3) { 1 * (i % HEIGHT) , 1 * (i / HEIGHT), 0 }, vel, 1); M++;
+      Mass(M, (Vector3) { 1 * (i % HEIGHT) , 0, 1 * (i / HEIGHT)}, vel, 1); M++;
     }
     
   }
+
+  // Sphere
+  Sphere = malloc(sizeof(PMat));
+  MassFixe(Sphere, (Vector3){8 , 8, HEIGHT/2});
+  Sphere->radius = 4;
 
   M = TabM;
   L = TabL;
 
   for (int i = 0; i < nbm - 1; i++) {
-      float k2 =   0.32 * Fe * Fe;
+      float k2 =   0.032 * Fe * Fe;
 
       //liens verticaux
       if (((i + 1) % HEIGHT) != 0) { 
@@ -96,7 +102,10 @@ void Anim(void)
   M = TabM;
   L = TabL;
   for(int i = 0; i < nbm ; i++) {
-    M->algo(M, h); ++M;
+    sphereCollision(M, Sphere);
+    //if(!sphereCollision(M, Sphere)) {// TODO rename ?
+      M->algo(M, h); ++M;
+    //}
   }
   for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
     L->algo(L);
@@ -111,12 +120,12 @@ static void Dessin(void)
   M = TabM;
   L = TabL;
   for(int i = 0; i < nbm ; i++) {
-    M->draw(M); ++M;
+    M->draw(M, G3Xrb); ++M;
   }
   for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
     L->draw(L); ++L;
   }
-  
+  Sphere->draw(Sphere, G3Xbb);
 }
 
 /*=    ACTION A EXECUTER EN SORTIE   =*/
@@ -145,9 +154,12 @@ int main(int argc, char** argv)
 
 	/* paramètres caméra */
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
-  g3x_SetPerspective(90.,100.,1.);
+  g3x_SetPerspective(20.,100.,1.);
   /* position, orientation de la caméra */
-  g3x_SetCameraSpheric(0.5*PI,0,30,(G3Xpoint){20.,0.,0.});
+  //g3x_SetCameraSpheric(0,0,30,(G3Xpoint){20.,0.,0.});
+  //,theta:2.578274,phi:1.685796
+  g3x_SetCameraSpheric(0.85*PI,0.535*PI,100.,(G3Xpoint){10.,10.,-10.});
+  //g3x_SetCameraCartesian((G3Xpoint){-1,1, 100}, (G3Xpoint){0.,0.,1.});
 
   /* fixe les param. colorimétriques du spot lumineux */
 	/* lumiere blanche (c'est les valeurs par defaut)   */	

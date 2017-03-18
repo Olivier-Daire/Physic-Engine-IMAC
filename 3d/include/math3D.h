@@ -8,7 +8,6 @@ typedef struct {
 } Vector3;
 
 Vector3* ProdVec3(Vector3* v, double s);
-
 Vector3* DivVec3(Vector3* v, double s);
 Vector3* SubVec3(Vector3* v, double s);
 Vector3* AddVec3(Vector3* v, double s);

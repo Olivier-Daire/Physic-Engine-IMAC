@@ -37,8 +37,23 @@ static void DrawLine(Link* L) {
 }
 
 void AlgoRessortFrein(Link* L) {
-	AlgoRessort(L);
+	double d = Distance3(L->M1->position, L->M2->position);
+
+	// I have no idea what i'm doing
+	if (abs(d - L->d0) > 1) {
+		Vector3 reset;
+		reset.x = 0;
+		reset.y = 0;
+		reset.z = 0;
+		
+		L->M1->force = reset;
+		L->M2->force = reset;
+		L->M1->velocity = reset;
+		L->M2->velocity = reset;
+	} 
+		AlgoRessort(L);
 	AlgoFrein(L);
+	
 }
 
 extern void RessortFrein(Link* L, double k, double z) {
