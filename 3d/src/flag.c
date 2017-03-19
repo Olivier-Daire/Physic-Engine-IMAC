@@ -25,6 +25,8 @@ PMat* M;
 PMat* Sphere;
 Link* Gravit;
 
+Link* Gravit2;
+
 static void Init(void)
 {
   double Fe = 100; // Frequence
@@ -94,16 +96,27 @@ static void Init(void)
   GravityLinkInit(Gravit);
   M = TabM;
   for (int i = 0; i < nbm - 1; i++) {
-    if(i == nbm - 2 ){
+    if(i == nbm - 1 ){
       break;
     }
     M++;
   }
   Connect(TabM, Gravit, M);
 
+  Gravit2 = malloc(sizeof(Link));
+  GravityLinkInit(Gravit2);
+  M = TabM;
+  for (int i = 0; i < nbm; i++) {
+    if(i == 23){
+      break;
+    }
+    M++;
+  }
+  Connect(TabM + 24*23 , Gravit2, M);
+
   // Sphere
   Sphere = malloc(sizeof(PMat));
-  MassFixe(Sphere, (Vector3){2, 8, 8});
+  MassFixe(Sphere, (Vector3){10, 10, 8});
   Sphere->radius = 5;
   TabLSphere = (Link*)calloc(nbm, sizeof(Link));
   LSphere = TabLSphere;
@@ -135,6 +148,7 @@ void Anim(void)
   }
 
   Gravit->algo(Gravit);
+  Gravit2->algo(Gravit2);
 }
 
 /*= FONCTION DE DESSIN PRINCIPALE =*/
@@ -155,6 +169,7 @@ static void Dessin(void)
   }
   Sphere->draw(Sphere, G3Xbb);
   Gravit->draw(Gravit);
+  Gravit2->draw(Gravit2);
 }
 
 /*=    ACTION A EXECUTER EN SORTIE   =*/
