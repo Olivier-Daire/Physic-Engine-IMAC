@@ -28,6 +28,11 @@ void Connect(PMat* M1, Link* L, PMat* M2) {
 	L->d0 = Distance3(L->M1->position, L->M2->position);
 }
 
+void AlgoRessortFrein(Link* L) {
+	AlgoRessort(L);
+	AlgoFrein(L);
+}
+
 void ConnectSphere(PMat* Sphere, Link* L, PMat* M2){
 	L->M1 = M2;
 	L->M2 = Sphere;
@@ -46,25 +51,11 @@ static void DrawLine(Link* L) {
 
 static void NoDraw(Link* L) {}
 
-void AlgoRessortFrein(Link* L) {
-	AlgoRessort(L);
-	AlgoFrein(L);
-}
-
 void AlgoRessortFreinSphere(Link* L) {
 	double d = Distance3(L->M1->position, L->M2->position);
 
-
 	if (d <= L->d0)
 	{
-		d = 1/ sqrt(d) - 1;
-	Vector3 force;
-	force.x = -L->M1->position.x * d; // No idea why the fuck is the x axis is reversed
-	force.y = L->M1->position.y * d;
-	force.z = L->M1->position.z * d;
-
-	 L->M1->velocity = Vec3AddVec3(force, L->M2->velocity);
-
 		AlgoRessort(L);
 		AlgoFrein(L);
 	}
@@ -85,12 +76,28 @@ extern void RessortFreinSphere(Link* L, double k, double z) {
 	L->algo = &AlgoRessortFreinSphere;
 }
 
-extern void Gravite(Link* L, Vector3 gravity) {
-	L->M1->force.x += gravity.x;
-	L->M1->force.y += gravity.y;
-	L->M1->force.z += gravity.z;
+extern void GravityLinkInit(Link* L) {
+    L->k = 0;
+    L->z = 0;
+    L->d0 = 0;
 
-	L->M2->force.x += gravity.x;
+    L->algo = &Gravity;
+    L->draw = &DrawLine;
+}
+
+static void Gravity(Link* L) {
+    float factor = 50;
+    Vector3 gravity = {0.0f, 9.81f * factor, 0.0f};
+
+	// Somethin is wrong with my x and z axes but i don't what
+	L->M1->force.x += -gravity.x;
+	L->M1->force.y += gravity.y;
+	L->M1->force.z += -gravity.z;
+
+	L->M2->force.x += -gravity.x;
 	L->M2->force.y += gravity.y;
-	L->M2->force.z += gravity.z;
+	L->M2->force.z += -gravity.z;
+
+    L->M1->force = Vec3AddVec3(L->M1->force, gravity);
+    L->M2->force = Vec3AddVec3(L->M2->force, gravity);
 }

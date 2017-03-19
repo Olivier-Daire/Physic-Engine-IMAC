@@ -60,35 +60,3 @@ extern void AlgoFixe(PMat* M, double h) {
 	M->velocity.y = 0;
 	M->velocity.z = 0;
 }
-
-extern bool sphereCollision(PMat* M, PMat* Sphere){
-	PMat temp = *M;
-
-	//temp.algo(&temp, 1/50);
-
-	double d = Distance3(temp.position, Sphere->position);
-
-	if (abs(d) > Sphere->radius)
-	{
-		return false;
-	}
-	d = Sphere->radius / sqrt(d) - Sphere->radius;
-	Vector3 force;
-	force.x = temp.position.x * d;
-	force.y = temp.position.y * d;
-	force.z = temp.position.z * d;
-
-	// cancel gravity
-	force = Vec3AddVec3(force, M->velocity);
-	// M->force.x -= force.x;
-	// M->force.y -= force.y;
-	// M->force.z -= force.z;
-
-	// Velocity --> force de repulsion
-	M->velocity.x = force.x;
-	M->velocity.y = force.y;
-	M->velocity.z = force.z;
-
-	return true;
-
-}

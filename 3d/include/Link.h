@@ -26,4 +26,7 @@ extern void RessortFreinSphere(Link* L, double k, double z);
 
 static void DrawLine(Link* L);
 static void NoDraw(Link* L);
+
+static void Gravity(Link* L);
+extern void GravityLinkInit(Link* L);
 #endif

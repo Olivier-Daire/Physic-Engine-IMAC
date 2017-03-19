@@ -24,6 +24,4 @@ static void DrawCircle(PMat* M, G3Xcolor color);
 extern void AlgoLeapFrog(PMat* M, double h);
 extern void AlgoFixe(PMat* M, double h);
 
-extern bool sphereCollision(PMat* M, PMat* Sphere);
-
 #endif

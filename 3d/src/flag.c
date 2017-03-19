@@ -23,6 +23,7 @@ Link* LSphere;
 PMat* M;
 
 PMat* Sphere;
+Link* Gravit;
 
 static void Init(void)
 {
@@ -58,12 +59,12 @@ static void Init(void)
   L = TabL;
 
   for (int i = 0; i < nbm - 1; i++) {
-      //liens verticaux
-      if (((i + 1) % HEIGHT) != 0) { 
+    //liens verticaux
+    if (((i + 1) % HEIGHT) != 0) { 
         RessortFrein(L, k, z);
         Connect(M, L, M+1);
         L++;
-      }
+    }
 
     // liens horizontaux
     if (i < (nbm - HEIGHT)) {
@@ -89,9 +90,20 @@ static void Init(void)
     M++;
   }
 
+  Gravit = malloc(sizeof(Link));
+  GravityLinkInit(Gravit);
+  M = TabM;
+  for (int i = 0; i < nbm - 1; i++) {
+    if(i == nbm - 2 ){
+      break;
+    }
+    M++;
+  }
+  Connect(TabM, Gravit, M);
+
   // Sphere
   Sphere = malloc(sizeof(PMat));
-  MassFixe(Sphere, (Vector3){12, 8, 8});
+  MassFixe(Sphere, (Vector3){2, 8, 8});
   Sphere->radius = 5;
   TabLSphere = (Link*)calloc(nbm, sizeof(Link));
   LSphere = TabLSphere;
@@ -114,7 +126,6 @@ void Anim(void)
   }
   for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
     L->algo(L);
-    Gravite(L, GRAVITY);
     ++L;
   }
   LSphere = TabLSphere;
@@ -122,6 +133,8 @@ void Anim(void)
     LSphere->algo(LSphere);
     ++LSphere;
   }
+
+  Gravit->algo(Gravit);
 }
 
 /*= FONCTION DE DESSIN PRINCIPALE =*/
@@ -141,6 +154,7 @@ static void Dessin(void)
     ++LSphere;
   }
   Sphere->draw(Sphere, G3Xbb);
+  Gravit->draw(Gravit);
 }
 
 /*=    ACTION A EXECUTER EN SORTIE   =*/
@@ -173,7 +187,7 @@ int main(int argc, char** argv)
   /* position, orientation de la caméra */
   //g3x_SetCameraSpheric(0,0,30,(G3Xpoint){20.,0.,0.});
   //,theta:2.578274,phi:1.685796
-  g3x_SetCameraSpheric(0.85*PI,0.535*PI,100.,(G3Xpoint){10.,10.,-10.});
+  g3x_SetCameraSpheric(0.85*PI,0.535*PI,100.,(G3Xpoint){10.,10.,10.});
   //g3x_SetCameraCartesian((G3Xpoint){-1,1, 100}, (G3Xpoint){0.,0.,1.});
 
   /* fixe les param. colorimétriques du spot lumineux */
