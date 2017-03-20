@@ -65,6 +65,8 @@ extern void RessortFrein(Link* L, double k, double z) {
 	L->k = k;
 	L->z = z;
 	L->d0 = 0;
+	L->M1 = NULL;
+	L->M2 = NULL;
 
 	L->algo = &AlgoRessortFrein;
 }
@@ -82,21 +84,11 @@ extern void GravityLinkInit(Link* L) {
     L->d0 = 0;
 
     L->algo = &Gravity;
-    L->draw = &DrawLine;
+    L->draw = &NoDraw;
 }
 
 static void Gravity(Link* L) {
-    float factor = 50;
-    Vector3 gravity = {0.0f, 9.81f * factor, 0.0f};
-
-	// Somethin is wrong with my x and z axes but i don't what
-	L->M1->force.x += -gravity.x;
-	L->M1->force.y += gravity.y;
-	L->M1->force.z += -gravity.z;
-
-	L->M2->force.x += -gravity.x;
-	L->M2->force.y += gravity.y;
-	L->M2->force.z += -gravity.z;
+    Vector3 gravity = {0.0f, 9.81f, 0.0f};
 
     L->M1->force = Vec3AddVec3(L->M1->force, gravity);
     L->M2->force = Vec3AddVec3(L->M2->force, gravity);

@@ -25,9 +25,11 @@ PMat* M;
 PMat* Sphere;
 Link* Gravit;
 
+Link* Gravit2;
+
 static void Init(void)
 {
-  double Fe = 100; // Frequence
+  double Fe = 20; // Frequence
   h = 1 / Fe; 
   double k = 0.03 * Fe * Fe; // Raideur
   double z = 0.013 * Fe; // Viscosite
@@ -42,17 +44,16 @@ static void Init(void)
   vel.y = 0;
   vel.z = 0;
 
-  for (int i = 0; i < nbm ; i++)
+  for (int i = 0; i < WIDTH ; i++)
   {
-    if (i < HEIGHT)
+    for (int j = 0; j < HEIGHT; j++)
     {
-      //MassFixe(M, (Vector3){1 * i , 0., 0}); M++;
-      // If we want no fixed point and an awesome flying flag
-      Mass(M, (Vector3) { 1 * i , 0., 0 }, vel, 1); M++;
-    } else {
-      Mass(M, (Vector3) { 1 * (i % HEIGHT) , 0, 1 * (i / HEIGHT)}, vel, 1); M++;
+      float mass = 0.3;
+      if (i == 0 || j == 0 || j == HEIGHT - 1  || i == WIDTH - 1) {
+        mass = 0.2;
+      }
+      Mass(M, (Vector3) { 1 * i , 0, 1 * j}, vel, mass); M++;
     }
-    
   }
 
   M = TabM;
@@ -94,23 +95,34 @@ static void Init(void)
   GravityLinkInit(Gravit);
   M = TabM;
   for (int i = 0; i < nbm - 1; i++) {
-    if(i == nbm - 2 ){
+    if(i == nbm - 1 ){
       break;
     }
     M++;
   }
   Connect(TabM, Gravit, M);
 
+  Gravit2 = malloc(sizeof(Link));
+  GravityLinkInit(Gravit2);
+  M = TabM;
+  for (int i = 0; i < nbm; i++) {
+    if(i == 23){
+      break;
+    }
+    M++;
+  }
+  Connect(TabM + 24*23 , Gravit2, M);
+
   // Sphere
   Sphere = malloc(sizeof(PMat));
-  MassFixe(Sphere, (Vector3){2, 8, 8});
+  MassFixe(Sphere, (Vector3){10, 10, 8});
   Sphere->radius = 5;
   TabLSphere = (Link*)calloc(nbm, sizeof(Link));
   LSphere = TabLSphere;
   M = TabM;
   for (int i = 0; i < nbm - 1; i++) {
      // lien avec sphere
-    RessortFreinSphere(LSphere, 600, z);
+    RessortFreinSphere(LSphere, k * 50, z);
     ConnectSphere(Sphere, LSphere, M);
     LSphere++;
     M++;
@@ -135,26 +147,56 @@ void Anim(void)
   }
 
   Gravit->algo(Gravit);
+  Gravit2->algo(Gravit2);
 }
 
 /*= FONCTION DE DESSIN PRINCIPALE =*/
 static void Dessin(void)
 {
-  M = TabM;
-  L = TabL;
-  for(int i = 0; i < nbm ; i++) {
-    M->draw(M, G3Xrb); ++M;
-  }
-  for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
-    L->draw(L); ++L;
-  }
-    LSphere = TabLSphere;
-  for(int i = 0; i < nbm -1 ; i++) {
-    LSphere->draw(LSphere); // FIXME
-    ++LSphere;
+  bool drawLines = false;
+  if (drawLines)
+  {
+    M = TabM;
+    L = TabL;
+    for(int i = 0; i < nbm ; i++) {
+      M->draw(M, G3Xrb); ++M;
+    }
+    for(int i = 0; i < (nbm*4)-142 ; i++) { // FIXME Whyyy ?
+      L->draw(L); ++L;
+    }
+      LSphere = TabLSphere;
+    for(int i = 0; i < nbm -1 ; i++) {
+      LSphere->draw(LSphere); // FIXME
+      ++LSphere;
+    }
+  } else {
+    drawFlag();
   }
   Sphere->draw(Sphere, G3Xbb);
-  Gravit->draw(Gravit);
+  //Gravit->draw(Gravit);
+  //Gravit2->draw(Gravit2);
+}
+
+void drawFlag() {
+    M = TabM;
+    glBegin(GL_TRIANGLES); //Begin triangle coordinates
+    for(int i = 0; i < WIDTH; ++i) {
+        for(int j = 0; j < HEIGHT; ++j) {
+
+            if (i < WIDTH-1 && j < HEIGHT - 1) {
+                  drawVertexTriangle(M, M+1 + HEIGHT, M + HEIGHT);
+                    drawVertexTriangle(M, M+1, M + 1 + HEIGHT);
+            }
+            M++;
+        }
+    }
+    glEnd();
+}
+
+void drawVertexTriangle(PMat* M1, PMat* M2, PMat* M3) {
+    glVertex3f(M1->position.x, M1->position.y, M1->position.z);
+    glVertex3f(M2->position.x, M2->position.y, M2->position.z);
+    glVertex3f(M3->position.x, M3->position.y, M3->position.z);
 }
 
 /*=    ACTION A EXECUTER EN SORTIE   =*/
