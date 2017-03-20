@@ -26,7 +26,7 @@ extern void MassFixe(PMat* M, Vector3 pos) {
 	M->force.y = 0;
 	M->force.z = 0;
 
-	M->masse = 1;
+	M->masse = 0.5;
 	M->radius = 0.1;
 
 	M->draw = &DrawCircle;
